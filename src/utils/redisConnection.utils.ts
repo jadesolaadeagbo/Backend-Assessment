@@ -12,4 +12,4 @@ redisClient.on('error', (err) => console.error('Redis Client Error:', err));
 export default redisClient;
 
 // call the set function   redis.set 
-// open npm documentation to see how the redis.set is use
+// open npm documentation to see how the redis.set is use 

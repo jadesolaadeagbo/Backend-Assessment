@@ -2,8 +2,9 @@ import express from "express"
 import dotenv from 'dotenv'
 import authenticationRoutes from "./routers/authentication"
 import teamsRoutes from "./routers/teams"
-import { connection } from "./utils/mongoConnection.utils";
+import { connection, closeConnection } from "./utils/mongoConnection.utils";
 import { sessionMiddleware } from "./middleware/index.middlware";
+import { responseLogger, requestLogger, notFoundHandler } from "./middleware/logger.middleware";
 
 dotenv.config();
 
@@ -11,16 +12,36 @@ const app = express();
 
 const PORT = process.env.PORT || 8000;
 
-app.use(sessionMiddleware);
+app.disable('x-powered-by');
 
+app.use(sessionMiddleware);
 app.use(express.json());
+app.use(requestLogger);
+app.use(responseLogger);
 app.use("/", authenticationRoutes);
 app.use("/teams", teamsRoutes);
 
-app.listen(PORT, () => {
+app.use(notFoundHandler)
+
+const server = app.listen(PORT, () => {
     connection();
-    console.log("The server is running on ", PORT)
+    console.log("The server is running on port", PORT)
 })
+
+process.on("SIGINT", async () => {
+    console.log("\nSIGINT received: Closing server gracefully...");
+    server.close(async () => {
+        console.log("Server closed.");
+        try {
+            // Close any open resources (e.g., database connections)
+            await closeConnection(); // If you maintain an instance of the connection
+            console.log("Connections closed.");
+        } catch (error) {
+            console.error("Error while closing database connection:", error);
+        }
+        process.exit(0); // Exit the process
+    });
+});
 
 
 /** Steps taken to configure this project

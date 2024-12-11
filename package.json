@@ -35,6 +35,7 @@
     "mongoose": "^8.8.2",
     "redis": "^4.7.0",
     "redis-session-store": "^0.0.3",
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.3",
+    "winston": "^3.17.0"
   }
 }

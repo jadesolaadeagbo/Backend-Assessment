@@ -5,11 +5,11 @@ import { authenticateToken, isAdmin } from '../middleware/index.middlware';
 const router = express.Router();
     router.use(authenticateToken);
 
-    router.post("/create", isAdmin("admin"), createTeam)
-    router.get("/all", getAllTeams)
-    router.get("/getTeam", getSingleTeam)
-    router.patch("/update/:id", isAdmin("admin"), updateTeam)
-    router.delete("/remove/:id", isAdmin("admin"), removeTeam)
+    router.post("/", isAdmin("admin"), createTeam)
+    router.get("/", getAllTeams)
+    router.get("/:teamId", getSingleTeam)
+    router.patch("/:teamId", isAdmin("admin"), updateTeam)
+    router.delete("/:teamId", isAdmin("admin"), removeTeam)
 
 export default router 
 

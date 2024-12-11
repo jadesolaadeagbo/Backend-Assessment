@@ -1,0 +1,2 @@
+[2024-12-11 09:20:26] [32minfo[39m: Incoming Request: POST /signup at 2024-12-11T08:20:26.200Z
+[2024-12-11 09:20:26] [32minfo[39m: API Response for POST /signup: {"status":"success","message":"User created successfully!"}
