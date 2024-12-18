@@ -1,7 +1,8 @@
 import express from "express"
 import dotenv from 'dotenv'
-import authenticationRoutes from "./routers/authentication"
-import teamsRoutes from "./routers/teams"
+import authenticationRoutes from "./routers/authentication.router"
+import teamsRoutes from "./routers/teams.router"
+import fixturesRoutes from "./routers/fixtures.router"
 import { connection, closeConnection } from "./utils/mongoConnection.utils";
 import { sessionMiddleware } from "./middleware/index.middlware";
 import { responseLogger, requestLogger, notFoundHandler } from "./middleware/logger.middleware";
@@ -20,6 +21,7 @@ app.use(requestLogger);
 app.use(responseLogger);
 app.use("/", authenticationRoutes);
 app.use("/teams", teamsRoutes);
+app.use("/fixtures", fixturesRoutes);
 
 app.use(notFoundHandler)
 

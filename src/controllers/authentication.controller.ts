@@ -36,7 +36,7 @@ export const signup = async( req: Request, res: Response ) =>{
         // SAVE USER DETAILS
         await newUser.save();
 
-        res.status(201).json({ status: "success", message: "User created successfully!" })
+        res.status(201).json({ status: "OK", message: "User created successfully!" })
 
     } catch (error){
         console.error("Error in signup controller")
@@ -83,7 +83,7 @@ export const login = async( req: Request, res: Response ) => {
         req.session.role = user.role;
 
         res.status(200).json({
-            status: "success",
+            status: "OK",
             message: "Login Successful!",
             data: {
                 token: token,

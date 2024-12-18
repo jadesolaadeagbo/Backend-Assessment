@@ -5,14 +5,29 @@
     description: string;
     logo?: string;
     owner: mongoose.Types.ObjectId;
+    squad: ISquad;
     createdAt: Date;
     updatedAt: Date;
+}
+
+interface ISquad{
+    goalkeepers: string[],
+    defenders: string[],
+    midfielders: string[],
+    forwards: string[]
 }
 
 const TeamSchema:Schema = new Schema<ITeam>({
     name: {type: String, unique:true, required: true},
     description: {type: String, required: true},
     logo: {type: String},
+    squad: {
+        goalkeepers: { type: [String], required: true },
+        defenders: { type: [String], required: true },
+        midfielders: { type: [String], required: true },
+        forwards: { type: [String], required: true },
+      },
+    owner:{type: mongoose.Schema.Types.ObjectId}
 },
 {
     timestamps: true, 
@@ -20,3 +35,5 @@ const TeamSchema:Schema = new Schema<ITeam>({
 )
 
  export const Team = mongoose.model<ITeam>("Team", TeamSchema);
+
+
