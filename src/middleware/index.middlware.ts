@@ -51,6 +51,21 @@ export const isAdmin = (authorizedRole: string) => {
       next(); // Pass control to the next middleware
     };
   };
+
+  export const cacheMiddleware = (keyPrefix: string) => async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const key = `${keyPrefix}_${JSON.stringify(req.query)}`;
+    try {
+        const cachedData = await redisClient.get(key);
+        if (cachedData) {
+          res.status(200).json(JSON.parse(cachedData)); // End the request cycle here
+        }
+        res.locals.cacheKey = key; // Save the cache key for later use in the handler
+        next(); // Proceed to the next middleware or controller
+    } catch (error) {
+        console.error("Cache middleware error:", error);
+        next(); // Proceed to the next middleware in case of an error
+    }
+};
   // we need to get the token 
 
   // Initialize Redis store

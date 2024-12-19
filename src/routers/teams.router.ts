@@ -1,8 +1,11 @@
 import express from 'express'
-import {createTeam, getAllTeams, getSingleTeam, updateTeam, removeTeam} from "../controllers/teams.controller"
+import {createTeam, getAllTeams, searchTeams, getSingleTeam, updateTeam, removeTeam} from "../controllers/teams.controller"
 import { authenticateToken, isAdmin } from '../middleware/index.middlware';
 
 const router = express.Router();
+    
+    router.get("/search", searchTeams)
+
     router.use(authenticateToken);
 
     router.post("/", isAdmin("admin"), createTeam)
@@ -14,4 +17,4 @@ const router = express.Router();
 export default router 
 
 // Authentication and postman
-// refresh tokens gateman
+// refresh tokens gateman 

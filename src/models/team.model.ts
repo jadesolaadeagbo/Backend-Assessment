@@ -10,7 +10,7 @@
     updatedAt: Date;
 }
 
-interface ISquad{
+export interface ISquad{
     goalkeepers: string[],
     defenders: string[],
     midfielders: string[],

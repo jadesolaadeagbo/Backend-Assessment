@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { Fixture } from "../models/fixtures.model";
+import { v4 as uuidv4 } from 'uuid'; 
+import redisClient from "../utils/redisConnection.utils";
 
 export const createFixture = async (req: Request, res: Response) => {
     try {
@@ -58,6 +60,64 @@ export const createFixture = async (req: Request, res: Response) => {
     }
 }
 
+export const generateFixtureLink = async (req: Request, res: Response) => {
+    try {
+        const { homeTeam, awayTeam, fixtureDate, score } = req.body;
+
+        if(!homeTeam|| !awayTeam || !fixtureDate){
+            res.status(400).json({
+                status: "Bad Request",
+                message: "Home Team, Away Team and Date are required fields!" 
+            })
+        }
+
+        const formattedDate = new Date(fixtureDate);
+
+        if(isNaN(formattedDate.getTime())){
+            res.status(400).json({
+                status:"Bad Request",
+                message:"Invalid date format provided!"
+            })
+        }
+
+        let status: "pending" | "completed";
+        if (formattedDate >= new Date()) {
+          status = "pending";
+        } else {
+          status = "completed";
+        }
+        
+        if (status === 'completed' && !score){
+            res.status(400).json({
+                status:"Bad Request",
+                message:"Scores must be provided for completed fixtures!"
+            })
+        }
+
+        const uniqueLink = `${req.protocol}://${req.get('host')}/fixtures/${uuidv4()}`;
+        const newFixture = new Fixture({
+            homeTeam,
+            awayTeam,
+            fixtureDate: formattedDate,
+            status,
+            score: status === "completed" ? score : null,
+            uniqueLink
+        })
+
+        await newFixture.save();
+
+        res.status(201).json({
+            status:"Success",
+            message:"A new fixture has been successfully created!",
+            data: {
+                newFixture
+            }
+        })
+    } catch(error){
+        console.error("Error in createFixture controller:", error);
+        res.status(500).json({ message: "Internal Server Error", error });
+    }
+}
 
 export const getAllFixtures = async (req: Request, res: Response) => {
     try {
@@ -112,7 +172,7 @@ export const searchFixtures = async (req: Request, res: Response) => {
                     message: "Invalid fixtureDate format!",
                 });
             }
-            query.fixtureDate = parsedDate; // Exact match for date
+            query.fixtureDate = parsedDate; 
     }
 
     if (status) {
@@ -150,7 +210,13 @@ export const searchFixtures = async (req: Request, res: Response) => {
 export const getSingleFixture = async (req: Request, res: Response) => {
     try {
         const {fixtureId} = req.params;
-        const fixture = await Fixture.findById(fixtureId);
+        const fixture = await Fixture.findOne({
+            $or: [
+            {_id: fixtureId},
+            { uniqueLink: `${req.protocol}://${req.get("host")}/fixtures/${fixtureId}` }
+            ]}
+        );
+
 
         if (!fixture){
             res.status(401).json({
@@ -250,3 +316,22 @@ export const deleteFixture = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Internal Server Error", error });
     }
 }
+
+export const getCachedFixtures = async (req: Request, res: Response) => {
+    try {
+        const { status } = req.query;
+        const cacheKey = `fixtures_${status || "all"}`;
+
+        const fixtures = await Fixture.find(status ? { status } : {});
+        await redisClient.set(cacheKey, JSON.stringify(fixtures), { EX: 3600 }); // Cache for 1 hour
+
+        res.status(200).json({
+            status: "OK",
+            message: "Fixtures retrieved successfully!",
+            data: fixtures,
+        });
+    } catch (error) {
+        console.error("Error retrieving fixtures:", error);
+        res.status(500).json({ message: "Internal Server Error", error });
+    }
+};

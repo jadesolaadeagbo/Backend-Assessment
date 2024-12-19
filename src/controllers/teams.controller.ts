@@ -1,5 +1,6 @@
 import { Team } from "../models/team.model";
 import { Request, Response } from "express";
+import { ISquad } from "../models/team.model";
 
 export const createTeam = async (req: Request, res: Response) => {
   try {
@@ -81,6 +82,50 @@ export const getAllTeams = async(req: Request, res: Response) =>{
         console.error(" Error in getTeams controller:", error)
         res.status(500).json({message: "Internal Server Error", error})
     }
+}
+
+export const searchTeams = async(req: Request, res: Response) =>{
+  try{
+    const { name, description, squad } = req.query as {
+      name?: string;
+      description?: string;
+      squad?: Partial<ISquad>;
+    };      
+    
+    const query: any = {};
+      if(name) query.name =  { $regex:name, $options: 'i' }
+      if(description) query.description =  { $regex:description, $options: 'i' }
+
+      if (squad) {
+        if (squad.goalkeepers)
+          query["squad.goalkeepers"] = { $regex: squad.goalkeepers, $options: "i" };
+        if (squad.defenders)
+          query["squad.defenders"] = { $regex: squad.defenders, $options: "i" };
+        if (squad.midfielders)
+          query["squad.midfielders"] = { $regex: squad.midfielders, $options: "i" };
+        if (squad.forwards)
+          query["squad.forwards"] = { $regex: squad.forwards, $options: "i" };
+      }
+      const teams = await Team.find(query);
+
+      if (!teams || teams.length === 0){
+        res.status(404).json({
+          status:"Not Found",
+          message: "No Teams Found"
+        })
+      }
+      res.status(200).json({
+        status:"OK",
+        message: "Teams returned successfully!",
+        data:{
+          teams: teams
+        }
+
+      })
+  } catch(error) {
+      console.error(" Error in getTeams controller:", error)
+      res.status(500).json({message: "Internal Server Error", error})
+  }
 }
 
 export const getSingleTeam = async(req: Request, res: Response) =>{
