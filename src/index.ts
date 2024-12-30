@@ -19,7 +19,7 @@ app.use(sessionMiddleware);
 app.use(express.json());
 app.use(requestLogger);
 app.use(responseLogger);
-app.use("/", authenticationRoutes);
+app.use("/auth", authenticationRoutes);
 app.use("/teams", teamsRoutes);
 app.use("/fixtures", fixturesRoutes);
 
@@ -45,7 +45,7 @@ process.on("SIGINT", async () => {
     });
 });
 
-
+export default app;
 /** Steps taken to configure this project
  
  * Create the project using npm init -y, install node modules and dev dependencies

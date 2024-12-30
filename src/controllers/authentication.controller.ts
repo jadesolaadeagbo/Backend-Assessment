@@ -9,17 +9,23 @@ export const signup = async( req: Request, res: Response ) =>{
 
         // If any required fields are not provided
         if(!username || !email || !password){
-            res.status(400).json({message: "All fields are required!"})
+            res.status(400).json({
+                status:"Bad Request",
+                message: "All fields are required!"})
         }
         // Ensure the role is valid
         if (!Object.values(Role).includes(role)) {
-            res.status(400).json({ message: "Invalid role!" });
+            res.status(400).json({ 
+                status:"Bad Request",
+                message: "Invalid role!" });
         }
 
         const existingUser = await User.findOne({email})
         // If user already exists
         if(existingUser){
-            res.status(400).json({message: "User already exists!"})
+            res.status(400).json({
+                status:"Bad Request",
+                message: "User already exists!"})
         }
 
         // Hash user password
@@ -36,7 +42,9 @@ export const signup = async( req: Request, res: Response ) =>{
         // SAVE USER DETAILS
         await newUser.save();
 
-        res.status(201).json({ status: "OK", message: "User created successfully!" })
+        res.status(201).json({ 
+            status: "OK", 
+            message: "User created successfully!" })
 
     } catch (error){
         console.error("Error in signup controller")
@@ -50,7 +58,10 @@ export const login = async( req: Request, res: Response ) => {
 
         // If any required fields are not provided
         if(!emailOrUsername || !password){
-            res.status(400).json({ message: "All fields are required!" })
+            res.status(400).json({
+                status:"Bad Request",
+                message: "All fields are required!"});
+            
         }
 
         const user = await User.findOne({
@@ -59,14 +70,20 @@ export const login = async( req: Request, res: Response ) => {
         // If user already exists
         
         if(!user){
-            res.status(401).json({ message: "Invalid credentials!" });
+            res.status(401).json({ 
+                status:"Not Found",
+                message: "Invalid credentials!" 
+            });
         }
 
         // Is the password valid
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if(!isPasswordValid){
-            res.status(401).json({ message: "Invalid credentials!" });
+            res.status(401).json({ 
+                status:"Not Found",
+                message: "Invalid credentials!" 
+            });
         }
 
         const userId = user._id.toString();
@@ -74,7 +91,10 @@ export const login = async( req: Request, res: Response ) => {
         const token = generateToken({id: user._id.toString(), role: user.role});
 
         if (!req.session) {
-            res.status(500).json({ message: "Session is not initialized." });
+            res.status(500).json({ 
+                status:"Not Found",
+                message: "Session is not initialized." 
+            });
         }
         // @ts-ignore
         req.session.userId = user._id;
